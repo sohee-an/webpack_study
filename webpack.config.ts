@@ -4,7 +4,7 @@ import ReactRefreshWebpackPlugin from "@pmmmwh/react-refresh-webpack-plugin";
 import { Configuration as WebpackDevServerConfiguration } from "webpack-dev-server";
 import webpack, { Configuration as WebpackConfiguration } from "webpack";
 
-const isDevelopment = process.env.NODE_ENV !== "production";
+const isDevelopment = true
 
 interface Configuration extends WebpackConfiguration {
   devServer?: WebpackDevServerConfiguration;
@@ -12,8 +12,10 @@ interface Configuration extends WebpackConfiguration {
 
 const config: Configuration = {
   name: "webpack-study",
-  mode: isDevelopment ? "development" : "production",
+   mode: isDevelopment ? "development" : "production",
+  //  devtool: isDevelopment ? 'eval-source-map' : 'source-map',
   resolve: {
+    modules: ['node_modules', 'src'],
     extensions: [".js", ".jsx", ".ts", ".tsx", ".json"],
     alias: {
       "@hooks": path.resolve(__dirname, "hooks"),
@@ -25,6 +27,7 @@ const config: Configuration = {
     },
   },
   entry: "./src/index.tsx",
+
   output: {
     filename: "bundle.js",
     path: path.resolve(__dirname, "dist"),
@@ -44,14 +47,16 @@ const config: Configuration = {
         test: /\.tsx?$/,
         loader: "ts-loader",
         exclude: /node_modules/,
-        options: {
-          transpileOnly: true, // ⚠️ react-refresh 호환 위해 추천
-        },
+        // options: {
+        //   transpileOnly: true, // ⚠️ react-refresh 호환 위해 추천
+        // },
       },
     ],
   },
-  plugins: [],
+   plugins: [],
 };
+
+
 
 if (isDevelopment && config.plugins) {
   config.plugins.push(new ReactRefreshWebpackPlugin());
@@ -62,3 +67,6 @@ if (isDevelopment && config.plugins) {
     })
   );
 }
+
+
+export default config

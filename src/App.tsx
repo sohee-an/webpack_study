@@ -1,9 +1,10 @@
 import React from "react";
 
+
 function App() {
   console.log("✅ App component loaded");
   return (
-    <div>
+    <div >
       <input />
       <button>확인 e</button>
     </div>

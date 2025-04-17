@@ -1,8 +1,11 @@
 {
+  "name":"webpack-study",
+ 
   "scripts": {
     "start": "node index.js",
     "dev": "webpack serve",
     "build": "webpack"
+   
   },
   "engines": {
     "node": "v20.12.1"
