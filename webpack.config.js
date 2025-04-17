@@ -1,5 +1,8 @@
 const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const ReactRefreshWebpackPlugin = require("@pmmmwh/react-refresh-webpack-plugin");
+
+const isProduction = process.env.NODE_ENV === "production";
 
 module.exports = {
   mode: "development",
@@ -33,5 +36,6 @@ module.exports = {
       template: "./public/index.html",
       filename: "index.html",
     }),
-  ],
+    !isProduction && new ReactRefreshWebpackPlugin(),
+  ].filter(Boolean),
 };
