@@ -5,7 +5,7 @@ function App() {
   return (
     <div>
       <input />
-      <button>확인 </button>
+      <button>확인 e</button>
     </div>
   );
 }
