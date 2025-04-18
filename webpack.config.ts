@@ -13,7 +13,6 @@ interface Configuration extends WebpackConfiguration {
 const config: Configuration = {
   name: "webpack-study",
    mode: isDevelopment ? "development" : "production",
-  //  devtool: isDevelopment ? 'eval-source-map' : 'source-map',
   resolve: {
     modules: ['node_modules', 'src'],
     extensions: [".js", ".jsx", ".ts", ".tsx", ".json"],
@@ -40,16 +39,17 @@ const config: Configuration = {
     open: true, // 브라우저 자동 열기
     historyApiFallback: true,
   },
+  
 
   module: {
     rules: [
+    
       {
-        test: /\.tsx?$/,
-        loader: "ts-loader",
+        test: /\.(js|ts|jsx|tsx)$/,   
         exclude: /node_modules/,
-        // options: {
-        //   transpileOnly: true, // ⚠️ react-refresh 호환 위해 추천
-        // },
+        use: {
+          loader: 'babel-loader'
+        }
       },
     ],
   },
