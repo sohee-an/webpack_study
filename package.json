@@ -10,16 +10,17 @@
     "node": "v20.12.1"
   },
   "dependencies": {
-    "core-js": "^3.41.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.27.0",
     "@babel/core": "^7.26.10",
+    "@babel/plugin-transform-runtime": "^7.26.10",
     "@babel/preset-env": "^7.26.9",
     "@babel/preset-react": "^7.26.3",
     "@babel/preset-typescript": "^7.27.0",
+    "@babel/runtime-corejs3": "^7.27.0",
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.16",
     "@types/react": "^19.1.2",
     "@types/react-dom": "^19.1.2",
