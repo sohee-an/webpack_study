@@ -1,10 +1,15 @@
 import React from "react";
-
+import "app.css"
 
 function App() {
-  console.log("✅ App component loaded");
+
+  
+
+
+ console.log('process',process.env.NODE_ENV)
+
   return (
-    <div >
+    <div  className="container">
       <input />
       <button>확인 e</button>
     </div>

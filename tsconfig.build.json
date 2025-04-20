@@ -1,0 +1,18 @@
+
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+      "noEmit": true      
+    },
+    "include": ["src/**/*"]
+  }
+
+// {
+//   "extends": "./tsconfig.json",
+//   "compilerOptions": {
+//     "declaration": true,             // 타입 정의 파일 생성
+//     "emitDeclarationOnly": true,     // .js는 만들지 않고 .d.ts만 생성
+//     "outDir": "dist/types"           // 출력 위치 지정
+//   },
+//   "include": ["src"]
+// }

@@ -4,7 +4,6 @@
     "sourceMap": true,
     "lib": ["ES2020", "DOM"],
     "jsx": "react",
-    
     "module": "esnext",
     "moduleResolution": "Node",
     "target": "es5",
