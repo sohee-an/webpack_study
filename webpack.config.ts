@@ -34,7 +34,7 @@ const config: Configuration = {
     path: path.resolve(__dirname, 'dist'),
     clean: true,
   },
-  devtool: isDevelopment ? 'eval-cheap-module-source-map' : 'hidden-source-map',
+  devtool: isDevelopment ? 'source-map' : 'hidden-source-map',
   devServer: {
     static: './public',
     port: 3000,
