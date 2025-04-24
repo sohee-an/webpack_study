@@ -39,7 +39,6 @@ const config: Configuration = {
     static: './public',
     port: 3000,
     hot: true,
-
     // open: true, // 브라우저 자동 열기
     historyApiFallback: true,
   },
@@ -56,10 +55,21 @@ const config: Configuration = {
           },
         },
       },
-      // CSS 로더 추가
+      // CSS 로더 수정 - Tailwind CSS 지원 추가
       {
         test: /\.css$/, // .css 파일에 대해
-        use: [process.env.NODE_ENV !== 'production' ? 'style-loader' : MiniCssExtractPlugin.loader, 'css-loader'], // 로더는 배열의 역순으로 적용.
+        use: [
+          process.env.NODE_ENV !== 'production' ? 'style-loader' : MiniCssExtractPlugin.loader,
+          'css-loader',
+          {
+            loader: 'postcss-loader',
+            options: {
+              postcssOptions: {
+                plugins: ['tailwindcss', 'autoprefixer'],
+              },
+            },
+          },
+        ],
       },
     ],
   },
