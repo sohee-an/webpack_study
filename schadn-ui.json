@@ -1,0 +1,9 @@
+{
+  "componentPath": "src/components",
+  "tsconfigPath": "tsconfig.json",
+  "tailwindConfig": "tailwind.config.js",
+  "aliases": {
+    "@/components": "./src/components",
+    "@/lib": "./src/lib"
+  }
+}
