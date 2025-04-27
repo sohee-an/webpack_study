@@ -1,10 +1,10 @@
 import React from 'react';
 
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '../ui/select';
-type EditorToolbarProps = {
-  onChange: (format: 'p' | 'h1' | 'h2' | 'h3') => void;
-};
 
+type EditorToolbarProps = {
+  onChange: (value: keyof HTMLElementTagNameMap) => void;
+};
 const HEADING_LIST = [
   { label: '본문', value: 'p' },
   { label: '제목 1', value: 'h1' },
@@ -14,19 +14,19 @@ const HEADING_LIST = [
 
 export default function EditorSelect({ onChange }: EditorToolbarProps) {
   return (
-    <div className="w-40 mb-4 ">
-      <Select onValueChange={(value) => onChange(value as 'p' | 'h1' | 'h2' | 'h3')}>
-        <SelectTrigger className="w-full">
-          <SelectValue placeholder="제목" />
+    <>
+      <Select onValueChange={(value) => onChange(value as keyof HTMLElementTagNameMap)}>
+        <SelectTrigger className="w-[100px]">
+          <SelectValue placeholder="본문" />
         </SelectTrigger>
-        <SelectContent className="bg-white ">
+        <SelectContent>
           {HEADING_LIST.map((item) => (
-            <SelectItem className="hover:bg-gray-200" key={item.value} value={item.value}>
+            <SelectItem className="hover:bg-gray-200 bg-white" key={item.value} value={item.value}>
               {item.label}
             </SelectItem>
           ))}
         </SelectContent>
       </Select>
-    </div>
+    </>
   );
 }
