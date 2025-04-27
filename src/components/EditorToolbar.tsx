@@ -6,10 +6,14 @@ import {
   SelectContent,
   SelectItem,
 } from '@/components/ui/select';
+import EditorButton from './editor/EditorButton';
 import EditorSelect from './editor/EditorSelect';
+import { useSelection } from '@/hooks/useSelection';
 
-import { Italic, Link, Image as ImageIcon } from 'lucide-react';
+import { Italic, Link, Image as ImageIcon, Upload, X, AlertCircle } from 'lucide-react';
 import { COLOR_LIST } from '@/constants/editor';
+import EditorTextAlignment from './editor/EditorTextAlignment';
+import { Button } from '@radix-ui/themes';
 
 type ToolbarProps = {
   editorRef: React.RefObject<HTMLDivElement | null>;
@@ -18,15 +22,26 @@ type ToolbarProps = {
 // 입력 팝업 타입
 type PopupType = 'link' | 'image' | null;
 
+// 이미지 업로드 상태
+type ImageUploadStatus = 'idle' | 'loading' | 'error' | 'success';
+
 export default function Toolbar({ editorRef }: ToolbarProps) {
-  const [savedRange, setSavedRange] = useState<Range | null>(null);
+  // const [savedRange, setSavedRange] = useState<Range | null>(null);
+  // useSelection 훅 사용
+  const { saveSelection, restoreSelection } = useSelection({ editorRef });
 
   // 팝업 타입 상태 통합
   const [activePopup, setActivePopup] = useState<PopupType>(null);
   const [inputValue, setInputValue] = useState('');
   const [fontSizeValue, setFontSizeValue] = useState(16);
 
+  // 이미지 관련 상태
+  const [imageUploadStatus, setImageUploadStatus] = useState<ImageUploadStatus>('idle');
+  const [imageErrorMessage, setImageErrorMessage] = useState('');
+  const [imagePreviewUrl, setImagePreviewUrl] = useState('');
+
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // 편집기에 포커스가 변경될 때 선택 영역 저장
   useEffect(() => {
@@ -56,6 +71,7 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
         ) {
           setActivePopup(null);
           setInputValue('');
+          resetImageState();
         }
       }
     };
@@ -68,36 +84,15 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
     };
   }, [editorRef, activePopup]);
 
-  // 현재 선택 영역을 저장
-  const saveSelection = () => {
-    try {
-      const selection = window.getSelection();
-      if (selection && selection.rangeCount > 0) {
-        const range = selection.getRangeAt(0);
-        setSavedRange(range.cloneRange());
-        return true;
-      }
-    } catch (e) {
-      console.error('선택 영역 저장 중 오류:', e);
+  // 이미지 상태 초기화
+  const resetImageState = () => {
+    setImageUploadStatus('idle');
+    setImageErrorMessage('');
+    setImagePreviewUrl('');
+    setInputValue('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
-    return false;
-  };
-
-  // 저장된 선택 영역을 복원
-  const restoreSelection = () => {
-    try {
-      if (savedRange) {
-        const selection = window.getSelection();
-        if (selection) {
-          selection.removeAllRanges();
-          selection.addRange(savedRange.cloneRange());
-          return true;
-        }
-      }
-    } catch (e) {
-      console.error('선택 영역 복원 중 오류:', e);
-    }
-    return false;
   };
 
   // 팝업 토글 함수 - 하나의 함수로 통합
@@ -108,10 +103,12 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
       // 같은 버튼을 다시 누르면 팝업 닫기
       setActivePopup(null);
       setInputValue('');
+      resetImageState();
     } else {
       // 다른 팝업으로 변경
       setActivePopup(type);
       setInputValue('');
+      resetImageState();
 
       // 팝업이 열리면 자동으로 input에 포커스
       setTimeout(() => {
@@ -122,9 +119,7 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
     }
   };
 
-  /**
-   * 하이퍼링크 삽입
-   *  */
+  // 하이퍼링크 삽입
   const insertLink = () => {
     if (!inputValue) return;
 
@@ -162,45 +157,116 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
     }
   };
 
-  /**
-   * 이미지 삽입
-   *  */
-  const insertImage = () => {
+  // 이미지 URL 유효성 검사
+  const validateImageUrl = (url: string): Promise<boolean> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve(true);
+      img.onerror = () => resolve(false);
+      img.src = url;
+    });
+  };
+
+  // 이미지 삽입 전처리
+  const prepareImageInsertion = async () => {
     if (!inputValue) return;
 
-    if (restoreSelection()) {
-      const selection = window.getSelection();
-      if (!selection || selection.rangeCount === 0) return;
+    setImageUploadStatus('loading');
 
-      const range = selection.getRangeAt(0);
+    // URL 검증 및 수정
+    let url = inputValue;
+    if (!/^https?:\/\//i.test(url)) {
+      url = 'https://' + url;
+    }
 
-      let url = inputValue;
-      if (!/^https?:\/\//i.test(url)) {
-        url = 'https://' + url;
+    // 이미지 URL 유효성 검사
+    const isValid = await validateImageUrl(url);
+
+    if (!isValid) {
+      setImageUploadStatus('error');
+      setImageErrorMessage('유효하지 않은 이미지 URL입니다.');
+      return;
+    }
+
+    // 이미지 미리보기 URL 설정
+    setImagePreviewUrl(url);
+    setImageUploadStatus('success');
+  };
+
+  // 파일 업로드 처리
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // 파일 타입 검사
+    if (!file.type.startsWith('image/')) {
+      setImageUploadStatus('error');
+      setImageErrorMessage('이미지 파일만 업로드할 수 있습니다.');
+      return;
+    }
+
+    // 파일 크기 제한 (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setImageUploadStatus('error');
+      setImageErrorMessage('이미지 크기는 5MB 이하여야 합니다.');
+      return;
+    }
+
+    setImageUploadStatus('loading');
+
+    // 파일에서 URL 생성 (실제로는 서버에 업로드하고 URL을 받아야 함)
+    // 여기서는 임시로 Data URL 사용
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      setImagePreviewUrl(result);
+      setImageUploadStatus('success');
+    };
+    reader.onerror = () => {
+      setImageUploadStatus('error');
+      setImageErrorMessage('이미지 로드 중 오류가 발생했습니다.');
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // 이미지 삽입
+  const insertImage = () => {
+    // 이미지 URL 직접 입력 시 미리보기 생성
+    if (inputValue && imageUploadStatus !== 'success') {
+      prepareImageInsertion();
+      return;
+    }
+
+    // 이미지 삽입 실행
+    if (imageUploadStatus === 'success' && imagePreviewUrl) {
+      if (restoreSelection()) {
+        const selection = window.getSelection();
+        if (!selection || selection.rangeCount === 0) return;
+
+        const range = selection.getRangeAt(0);
+
+        const img = document.createElement('img');
+        img.src = imagePreviewUrl;
+        img.alt = 'image';
+        img.style.maxWidth = '100%';
+
+        range.deleteContents();
+        range.insertNode(img);
+
+        // 커서 이동: 이미지 뒤로
+        range.setStartAfter(img);
+        range.setEndAfter(img);
+        selection.removeAllRanges();
+        selection.addRange(range);
+
+        // 상태 초기화
+        resetImageState();
+        setActivePopup(null);
       }
-
-      const img = document.createElement('img');
-      img.src = url;
-      img.alt = 'image';
-      img.style.maxWidth = '100%';
-
-      range.deleteContents();
-      range.insertNode(img);
-
-      // 커서 이동: 이미지 뒤로
-      range.setStartAfter(img);
-      range.setEndAfter(img);
-      selection.removeAllRanges();
-      selection.addRange(range);
-
-      setInputValue('');
-      setActivePopup(null);
     }
   };
 
-  /**
-   *  폰트 사이즈 증가
-   *  */
+  // 폰트 사이즈 증가
   const increaseFontSize = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -242,11 +308,6 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
     });
   };
 
-  /**
-   * 폰트 사이즈 수정
-   * @param e
-   * @returns
-   */
   const applyFontSize = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -273,10 +334,7 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
     }
   };
 
-  /**
-   * 키보드로 팝업 입력값 제출 처리
-   * @param e
-   */
+  // 키보드로 팝업 입력값 제출 처리
   const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -289,6 +347,7 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
       e.preventDefault();
       setActivePopup(null);
       setInputValue('');
+      resetImageState();
     }
   };
 
@@ -349,7 +408,7 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
       selection.addRange(newRange);
 
       // 새 선택 영역을 저장
-      setSavedRange(newRange.cloneRange());
+      // setSavedRange(newRange.cloneRange());
     } catch (error) {
       console.error('선택 영역 설정 중 오류 발생:', error);
       // 오류가 발생했을 때 fallback으로 원래 선택 위치를 복원
@@ -359,7 +418,7 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
         fallbackRange.setEnd(originalRange.endContainer, originalRange.endOffset);
         selection.removeAllRanges();
         selection.addRange(fallbackRange);
-        setSavedRange(fallbackRange.cloneRange());
+        // setSavedRange(fallbackRange.cloneRange());
       } catch (fallbackError) {
         console.error('원래 선택 영역 복원 실패:', fallbackError);
       }
@@ -381,30 +440,111 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
     wrapSelectionWithElement('span', { color });
   };
 
-  // 공통 팝업 UI 컴포넌트
-  const renderPopup = () => {
-    if (!activePopup) return null;
-
-    const isLink = activePopup === 'link';
-    // const isImage = activePopup === 'image';
-
+  // 링크 팝업 UI
+  const renderLinkPopup = () => {
     return (
       <div className="absolute top-full mt-1 left-0 flex gap-1 z-10">
         <input
           ref={inputRef}
           onClick={(e) => e.stopPropagation()}
           className="border rounded px-2 py-1 text-sm w-48 bg-white shadow"
-          placeholder={isLink ? '링크를 입력해주세요' : '이미지 URL 입력'}
+          placeholder="링크를 입력해주세요"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleInputKeyDown}
         />
         <button
-          onClick={isLink ? insertLink : insertImage}
-          className={`w-14 ${isLink ? 'bg-blue-500 hover:bg-blue-600' : 'bg-green-500 hover:bg-green-600'} text-white px-2 rounded text-sm`}
+          onClick={insertLink}
+          className="w-14 bg-blue-500 hover:bg-blue-600 text-white px-2 rounded text-sm"
         >
           적용
         </button>
+      </div>
+    );
+  };
+
+  // 이미지 팝업 UI
+  const renderImagePopup = () => {
+    return (
+      <div className="absolute top-full mt-1 left-0 z-10 bg-white rounded shadow p-2 w-64">
+        {/* 숨겨진 파일 입력 */}
+        <input
+          type="file"
+          ref={fileInputRef}
+          className="hidden"
+          accept="image/*"
+          onChange={handleFileUpload}
+        />
+
+        {/* URL 입력 영역 */}
+        <div className="flex gap-1 mb-2">
+          <input
+            ref={inputRef}
+            onClick={(e) => e.stopPropagation()}
+            className="border rounded px-2 py-1 text-sm flex-1 bg-white"
+            placeholder="이미지 URL 입력"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={handleInputKeyDown}
+            disabled={imageUploadStatus === 'loading'}
+          />
+          <button
+            onClick={() => inputValue && insertImage()}
+            className="bg-green-500 hover:bg-green-600 text-white px-2 rounded text-sm"
+            disabled={imageUploadStatus === 'loading'}
+          >
+            URL
+          </button>
+        </div>
+
+        {/* 파일 업로드 버튼 */}
+        <button
+          onClick={() => fileInputRef.current?.click()}
+          className="flex items-center justify-center gap-1 w-full py-1 mb-2 border rounded text-sm hover:bg-gray-100"
+          disabled={imageUploadStatus === 'loading'}
+        >
+          <Upload className="w-3 h-3" />
+          이미지 파일 업로드
+        </button>
+
+        {/* 로딩 상태 */}
+        {imageUploadStatus === 'loading' && (
+          <div className="text-center py-2 text-sm text-gray-600">이미지 로딩 중...</div>
+        )}
+
+        {/* 에러 메시지 */}
+        {imageUploadStatus === 'error' && (
+          <div className="text-center py-1 text-sm text-red-500 flex items-center justify-center gap-1">
+            <AlertCircle className="w-3 h-3" />
+            {imageErrorMessage}
+          </div>
+        )}
+
+        {/* 이미지 미리보기 */}
+        {imageUploadStatus === 'success' && imagePreviewUrl && (
+          <div className="relative">
+            <div className="relative border rounded overflow-hidden" style={{ maxHeight: '100px' }}>
+              <img
+                src={imagePreviewUrl}
+                alt="Preview"
+                className="max-w-full object-contain mx-auto"
+                style={{ maxHeight: '100px' }}
+              />
+            </div>
+            <button
+              className="absolute top-1 right-1 bg-white rounded-full p-1 shadow hover:bg-gray-100"
+              onClick={resetImageState}
+            >
+              <X className="w-3 h-3" />
+            </button>
+            <button
+              className="w-full mt-2 py-1 bg-green-500 hover:bg-green-600 text-white rounded text-sm"
+              onClick={insertImage}
+            >
+              이미지 삽입하기
+            </button>
+          </div>
+        )}
       </div>
     );
   };
@@ -419,11 +559,12 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
         }}
       />
 
-      <div className="w-px h-full bg-gray-300"></div>
+      <div className="w-px h-full bg-gray-300 "></div>
+
       {/* Font Size */}
-      <button onMouseDown={decreaseFontSize} className="px-2 py-1 border rounded hover:bg-gray-100">
+      <Button onMouseDown={decreaseFontSize} className="px-2 py-1 border rounded hover:bg-gray-100">
         -
-      </button>
+      </Button>
       <form onSubmit={(e) => applyFontSize(e)}>
         <input
           onMouseDown={(e) => {
@@ -436,9 +577,9 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
           className="w-10 text-center border rounded"
         />
       </form>
-      <button onMouseDown={increaseFontSize} className="px-2 py-1 border rounded hover:bg-gray-100">
+      <Button onMouseDown={increaseFontSize} className="px-2 py-1 border rounded hover:bg-gray-100">
         +
-      </button>
+      </Button>
 
       <div className="w-px h-full bg-gray-300"></div>
 
@@ -456,35 +597,44 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
         </SelectContent>
       </Select>
       <div className="w-px h-full bg-gray-300"></div>
+
+      <div className="w-px h-full bg-gray-300"></div>
+
       {/* Bold / Italic */}
-      <button onClick={applyBold} className="px-2 py-1 font-bold border rounded hover:bg-gray-100">
+      <EditorButton onClick={applyBold}>B</EditorButton>
+      {/* <Button onClick={applyBold} className="px-2 py-1 font-bold border rounded hover:bg-gray-100">
         B
-      </button>
-      <button onClick={applyItalic} className="px-2 py-1 border rounded hover:bg-gray-100">
+      </Button> */}
+      <EditorButton onClick={applyItalic}>
         <Italic className="w-4 h-4" />
-      </button>
+      </EditorButton>
+
+      <div className="w-px h-full bg-gray-300"></div>
+
+      {/* Text Alignment */}
+      <EditorTextAlignment editorRef={editorRef} />
 
       <div className="w-px h-full bg-gray-300"></div>
 
       {/* 하이퍼링크 */}
-      <button
+      <Button
         data-popup="link"
         onClick={() => togglePopup('link')}
         className={`relative p-2 border rounded ${activePopup === 'link' ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
       >
         <Link className="w-4 h-4" />
-        {activePopup === 'link' && renderPopup()}
-      </button>
+        {activePopup === 'link' && renderLinkPopup()}
+      </Button>
 
       {/* 이미지 */}
-      <button
+      <Button
         data-popup="image"
         onClick={() => togglePopup('image')}
         className={`relative p-2 border rounded ${activePopup === 'image' ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
       >
         <ImageIcon className="w-4 h-4" />
-        {activePopup === 'image' && renderPopup()}
-      </button>
+        {activePopup === 'image' && renderImagePopup()}
+      </Button>
 
       <div className="w-px h-full bg-gray-300"></div>
     </div>
