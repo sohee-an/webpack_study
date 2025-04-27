@@ -85,6 +85,86 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
     };
   }, [editorRef, activePopup]);
 
+  // 에디터 컨테이너에 이벤트 리스너 추가
+  useEffect(() => {
+    if (!editorRef.current) return;
+
+    const editor = editorRef.current;
+
+    // 링크 클릭 처리
+    const handleLinkClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const link = target.closest('a');
+
+      if (link) {
+        e.preventDefault();
+
+        // Ctrl/Cmd 키를 누른 상태에서 클릭 시 링크 열기
+        if (e.ctrlKey || e.metaKey) {
+          const href = link.getAttribute('href');
+          if (href !== null) {
+            window.open(href, '_blank');
+          }
+          return;
+        }
+
+        // 일반 클릭 시 현재 선택을 링크로 설정
+        const selection = window.getSelection();
+        const range = document.createRange();
+        range.selectNode(link);
+        selection?.removeAllRanges();
+        selection?.addRange(range);
+      }
+    };
+
+    // 링크 호버 시 툴팁 표시
+    const handleLinkMouseOver = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const link = target.closest('a');
+
+      if (link) {
+        const existingTooltip = document.querySelector('.link-tooltip');
+        if (existingTooltip) {
+          existingTooltip.remove();
+        }
+
+        // 새 툴팁 생성하기
+        const tooltip = document.createElement('div');
+        tooltip.className = 'link-tooltip';
+        tooltip.textContent = link.getAttribute('href');
+        tooltip.style.position = 'absolute';
+        tooltip.style.left = `${e.pageX + 10}px`;
+        tooltip.style.top = `${e.pageY + 10}px`;
+        tooltip.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+        tooltip.style.color = 'white';
+        tooltip.style.padding = '5px 8px';
+        tooltip.style.borderRadius = '4px';
+        tooltip.style.fontSize = '12px';
+        tooltip.style.zIndex = '1000';
+
+        document.body.appendChild(tooltip);
+      }
+    };
+
+    // 링크에서 마우스가 벗어날 때 툴팁 제거하기
+    const handleLinkMouseOut = () => {
+      const tooltip = document.querySelector('.link-tooltip');
+      if (tooltip) {
+        tooltip.remove();
+      }
+    };
+
+    editor.addEventListener('click', handleLinkClick);
+    editor.addEventListener('mouseover', handleLinkMouseOver);
+    editor.addEventListener('mouseout', handleLinkMouseOut);
+
+    return () => {
+      editor.removeEventListener('click', handleLinkClick);
+      editor.removeEventListener('mouseover', handleLinkMouseOver);
+      editor.removeEventListener('mouseout', handleLinkMouseOut);
+    };
+  }, [editorRef]);
+
   // 이미지 상태 초기화
   const resetImageState = () => {
     setImageUploadStatus('idle');
@@ -154,7 +234,6 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
       selection.removeAllRanges();
       selection.addRange(range);
 
-      // 상태 초기화
       setInputValue('');
       setActivePopup(null);
     }
@@ -196,7 +275,11 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
     setImageUploadStatus('success');
   };
 
-  // 파일 업로드 처리
+  /**
+   * 파일 업로드 처리
+   * @param e
+   * @returns
+   */
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;

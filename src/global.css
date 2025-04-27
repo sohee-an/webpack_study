@@ -5,31 +5,34 @@
 /* 🧩 추가로 이걸 꼭 직접 추가해줘야 한다 */
 @layer base {
   :root {
+    /* ✅ 추가: 기본 헤딩 스타일 */
+    h1 {
+      font-size: 2.25rem; /* text-4xl */
+      font-weight: 700; /* font-bold */
+      line-height: 2.5rem; /* leading-tight */
+      margin-top: 1rem;
+      margin-bottom: 0.5rem;
+    }
 
-     /* ✅ 추가: 기본 헤딩 스타일 */
-  h1 {
-    font-size: 2.25rem; /* text-4xl */
-    font-weight: 700; /* font-bold */
-    line-height: 2.5rem; /* leading-tight */
-    margin-top: 1rem;
-    margin-bottom: 0.5rem;
-  }
+    h2 {
+      font-size: 1.875rem; /* text-3xl */
+      font-weight: 600; /* font-semibold */
+      line-height: 2.25rem; /* leading-tight */
+      margin-top: 1rem;
+      margin-bottom: 0.5rem;
+    }
 
-  h2 {
-    font-size: 1.875rem; /* text-3xl */
-    font-weight: 600; /* font-semibold */
-    line-height: 2.25rem; /* leading-tight */
-    margin-top: 1rem;
-    margin-bottom: 0.5rem;
-  }
-
-  h3 {
-    font-size: 1.5rem; /* text-2xl */
-    font-weight: 600; /* font-semibold */
-    line-height: 2rem; /* leading-tight */
-    margin-top: 1rem;
-    margin-bottom: 0.5rem;
-  }
+    h3 {
+      font-size: 1.5rem; /* text-2xl */
+      font-weight: 600; /* font-semibold */
+      line-height: 2rem; /* leading-tight */
+      margin-top: 1rem;
+      margin-bottom: 0.5rem;
+    }
+    a {
+      color: rgb(28, 28, 198);
+      cursor: pointer;
+    }
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
 
@@ -59,8 +62,6 @@
     --ring: 222.2 84% 4.9%;
 
     --radius: 0.5rem;
-
-
   }
 
   .dark {
