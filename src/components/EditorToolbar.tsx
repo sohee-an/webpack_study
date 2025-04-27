@@ -11,7 +11,7 @@ import EditorUploadButton from './editor/EditorUploadButton';
 import EditorButton from './editor/EditorButton';
 import EditorSelect from './editor/EditorSelect';
 import { useSelection } from '@/hooks/useSelection';
-
+import EditorList from './editor/EditorList';
 import { Italic, Link, Image as ImageIcon, Upload, X, AlertCircle } from 'lucide-react';
 import { COLOR_LIST } from '@/constants/editor';
 import EditorTextAlignment from './editor/EditorTextAlignment';
@@ -485,7 +485,7 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
   };
 
   return (
-    <div className="flex items-center gap-2 mb-4 h-8 py-1">
+    <div className="flex items-center gap-2 mb-4 h-10   py-1">
       {/* Heading Select */}
       <EditorSelect
         onChange={(value) => {
@@ -494,7 +494,7 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
         }}
       />
 
-      <div className="w-px h-full bg-gray-300 "></div>
+      <div className="w-px h-full bg-gray-300 py-1"></div>
 
       {/* Font Size */}
       <EditorFontSize
@@ -524,8 +524,9 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
       <div className="w-px h-full bg-gray-300"></div>
 
       {/* Color */}
+
       <Select onValueChange={(value) => applyColor(value)}>
-        <SelectTrigger className="w-[100px]">
+        <SelectTrigger className="w-[100px] h-full ">
           <SelectValue placeholder="color" />
         </SelectTrigger>
         <SelectContent>
@@ -536,6 +537,7 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
           ))}
         </SelectContent>
       </Select>
+
       <div className="w-px h-full bg-gray-300"></div>
 
       {/* Bold / Italic */}
@@ -548,6 +550,10 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
 
       {/* Text Alignment */}
       <EditorTextAlignment editorRef={editorRef} />
+
+      <div className="w-px h-full bg-gray-300"></div>
+
+      <EditorList editorRef={editorRef} />
 
       <div className="w-px h-full bg-gray-300"></div>
 

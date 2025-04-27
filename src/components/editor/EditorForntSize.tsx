@@ -87,7 +87,10 @@ export default function EditorFontSize({
 
   return (
     <>
-      <Button onMouseDown={decreaseFontSize} className="px-2 py-1 border rounded hover:bg-gray-100">
+      <Button
+        onMouseDown={decreaseFontSize}
+        className="h-full flex items-center justify-center px-2 py-1 border rounded hover:bg-gray-100"
+      >
         -
       </Button>
       <form onSubmit={applyFontSize}>
@@ -99,10 +102,13 @@ export default function EditorFontSize({
           onFocus={saveSelection}
           value={fontSizeValue}
           onChange={handleFontSizeInputChange}
-          className="w-10 text-center border rounded"
+          className="w-10 h-full text-center border rounded"
         />
       </form>
-      <Button onMouseDown={increaseFontSize} className="px-2 py-1 border rounded hover:bg-gray-100">
+      <Button
+        onMouseDown={increaseFontSize}
+        className="h-full flex items-center justify-center px-2 py-1 border rounded hover:bg-gray-100"
+      >
         +
       </Button>
     </>

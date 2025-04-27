@@ -19,13 +19,15 @@ export default function EditorUploadButton({
 }: TProps) {
   console.log('type', type);
   return (
-    <Button
-      data-popup={type}
-      onClick={() => togglePopup(type)}
-      className={`relative p-2 border rounded ${activePopup === type ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
-    >
-      {children}
-      {activePopup === type && renderPopUp()}
-    </Button>
+    <div className="">
+      <Button
+        data-popup={type}
+        onClick={() => togglePopup(type)}
+        className={`relative h-full  w-8 p-2 border rounded ${activePopup === type ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
+      >
+        {children}
+        {activePopup === type && renderPopUp()}
+      </Button>
+    </div>
   );
 }
