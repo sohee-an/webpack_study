@@ -6,6 +6,7 @@ import {
   SelectContent,
   SelectItem,
 } from '@/components/ui/select';
+import EditorFontSize from './editor/EditorForntSize';
 import EditorUploadButton from './editor/EditorUploadButton';
 import EditorButton from './editor/EditorButton';
 import EditorSelect from './editor/EditorSelect';
@@ -14,7 +15,6 @@ import { useSelection } from '@/hooks/useSelection';
 import { Italic, Link, Image as ImageIcon, Upload, X, AlertCircle } from 'lucide-react';
 import { COLOR_LIST } from '@/constants/editor';
 import EditorTextAlignment from './editor/EditorTextAlignment';
-import { Button } from '@radix-ui/themes';
 
 type ToolbarProps = {
   editorRef: React.RefObject<HTMLDivElement | null>;
@@ -269,74 +269,6 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
     }
   };
 
-  // 폰트 사이즈 증가
-  const increaseFontSize = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    // 선택 영역 복원 시도
-    if (!restoreSelection()) {
-      // 복원 실패 시 현재 선택 영역 사용
-      saveSelection();
-    }
-
-    // 상태 업데이트 및 스타일 적용
-    setFontSizeValue((prev) => {
-      const newSize = Math.min(prev + 1, 72);
-      const selection = window.getSelection();
-      if (selection && selection.rangeCount > 0) {
-        wrapSelectionWithElement('span', { fontSize: `${newSize}px` });
-      }
-      return newSize;
-    });
-  };
-
-  const decreaseFontSize = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    // 선택 영역 복원 시도
-    if (!restoreSelection()) {
-      saveSelection();
-    }
-
-    // 상태 업데이트 및 스타일 적용
-    setFontSizeValue((prev) => {
-      const newSize = Math.max(prev - 1, 8);
-      const selection = window.getSelection();
-      if (selection && selection.rangeCount > 0) {
-        wrapSelectionWithElement('span', { fontSize: `${newSize}px` });
-      }
-      return newSize;
-    });
-  };
-
-  const applyFontSize = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    try {
-      // 선택 영역 복원 시도
-      if (!restoreSelection()) {
-        saveSelection();
-        if (!restoreSelection()) {
-          console.log('선택 영역을 복원할 수 없습니다.');
-          return;
-        }
-      }
-
-      wrapSelectionWithElement('span', { fontSize: `${fontSizeValue}px` });
-    } catch (error) {
-      console.error('폰트 사이즈 적용 중 오류:', error);
-    }
-  };
-
-  const handleFontSizeInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = parseInt(e.target.value);
-    if (!isNaN(value) && value > 0) {
-      setFontSizeValue(value);
-    }
-  };
-
   // 키보드로 팝업 입력값 제출 처리
   const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
@@ -565,8 +497,12 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
       <div className="w-px h-full bg-gray-300 "></div>
 
       {/* Font Size */}
-      {/* <EditorFontSize editorRef={editorRef} /> */}
-      <Button onMouseDown={decreaseFontSize} className="px-2 py-1 border rounded hover:bg-gray-100">
+      <EditorFontSize
+        editorRef={editorRef}
+        fontSizeValue={fontSizeValue}
+        setFontSizeValue={setFontSizeValue}
+      />
+      {/* <Button onMouseDown={decreaseFontSize} className="px-2 py-1 border rounded hover:bg-gray-100">
         -
       </Button>
       <form onSubmit={(e) => applyFontSize(e)}>
@@ -583,7 +519,7 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
       </form>
       <Button onMouseDown={increaseFontSize} className="px-2 py-1 border rounded hover:bg-gray-100">
         +
-      </Button>
+      </Button> */}
 
       <div className="w-px h-full bg-gray-300"></div>
 

@@ -1,16 +1,43 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Button } from '@radix-ui/themes';
-
 import { useEditorUtils } from '@/hooks/useEditorUtils';
-type TProps = {
-  editorRef: React.RefObject<HTMLDivElement | null>;
-};
-export default function EditorFontSize({ editorRef }: TProps) {
-  const [fontSizeValue, setFontSizeValue] = useState(16);
 
+type EditorFontSizeProps = {
+  editorRef: React.RefObject<HTMLDivElement | null>;
+  fontSizeValue: number;
+  setFontSizeValue: React.Dispatch<React.SetStateAction<number>>;
+};
+
+export default function EditorFontSize({
+  editorRef,
+  fontSizeValue,
+  setFontSizeValue,
+}: EditorFontSizeProps) {
   const { wrapSelectionWithElement, saveSelection, restoreSelection } = useEditorUtils({
     editorRef,
   });
+
+  // 폰트 사이즈 증가
+  const increaseFontSize = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // 선택 영역 복원 시도
+    if (!restoreSelection()) {
+      // 복원 실패 시 현재 선택 영역 사용
+      saveSelection();
+    }
+
+    // 상태 업데이트 및 스타일 적용
+    setFontSizeValue((prev) => {
+      const newSize = Math.min(prev + 1, 72);
+      const selection = window.getSelection();
+      if (selection && selection.rangeCount > 0) {
+        wrapSelectionWithElement('span', { fontSize: `${newSize}px` });
+      }
+      return newSize;
+    });
+  };
 
   const decreaseFontSize = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -58,34 +85,12 @@ export default function EditorFontSize({ editorRef }: TProps) {
     }
   };
 
-  // 폰트 사이즈 증가
-  const increaseFontSize = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    // 선택 영역 복원 시도
-    if (!restoreSelection()) {
-      // 복원 실패 시 현재 선택 영역 사용
-      saveSelection();
-    }
-
-    // 상태 업데이트 및 스타일 적용
-    setFontSizeValue((prev) => {
-      const newSize = Math.min(prev + 1, 72);
-      const selection = window.getSelection();
-      if (selection && selection.rangeCount > 0) {
-        wrapSelectionWithElement('span', { fontSize: `${newSize}px` });
-      }
-      return newSize;
-    });
-  };
-
   return (
     <>
       <Button onMouseDown={decreaseFontSize} className="px-2 py-1 border rounded hover:bg-gray-100">
         -
       </Button>
-      <form onSubmit={(e) => applyFontSize(e)}>
+      <form onSubmit={applyFontSize}>
         <input
           onMouseDown={(e) => {
             saveSelection();
