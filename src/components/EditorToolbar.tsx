@@ -9,36 +9,24 @@ import {
 import EditorSelect from './editor/EditorSelect';
 
 import { Italic, Link, Image as ImageIcon } from 'lucide-react';
-
-// Heading 종류 리스트
-// const HEADING_LIST = [
-//   { label: '본문', value: 'p' },
-//   { label: '제목 1', value: 'h1' },
-//   { label: '제목 2', value: 'h2' },
-//   { label: '제목 3', value: 'h3' },
-//   { label: '제목 4', value: 'h4' },
-// ] as const;
-
-const COLOR_LIST = [
-  { label: '검정', value: '#000000' },
-  { label: '빨강', value: '#FF0000' },
-  { label: '파랑', value: '#0000FF' },
-  { label: '초록', value: '#00FF00' },
-] as const;
+import { COLOR_LIST } from '@/constants/editor';
 
 type ToolbarProps = {
   editorRef: React.RefObject<HTMLDivElement | null>;
 };
 
+// 입력 팝업 타입
+type PopupType = 'link' | 'image' | null;
+
 export default function Toolbar({ editorRef }: ToolbarProps) {
   const [savedRange, setSavedRange] = useState<Range | null>(null);
 
-  const [showLinkInput, setShowLinkInput] = useState(false);
-  const [showImageInput, setShowImageInput] = useState(false);
+  // 팝업 타입 상태 통합
+  const [activePopup, setActivePopup] = useState<PopupType>(null);
   const [inputValue, setInputValue] = useState('');
   const [fontSizeValue, setFontSizeValue] = useState(16);
 
-  const linkInputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // 편집기에 포커스가 변경될 때 선택 영역 저장
   useEffect(() => {
@@ -55,10 +43,30 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
 
     document.addEventListener('selectionchange', handleSelectionChange);
 
+    // 문서 클릭 시 팝업 닫기
+    const handleDocumentClick = (e: MouseEvent) => {
+      // 팝업 영역 또는 해당 버튼 클릭이 아닌 경우 팝업 닫기
+      if (activePopup && inputRef.current && !inputRef.current.contains(e.target as Node)) {
+        const linkButton = document.querySelector('[data-popup="link"]');
+        const imageButton = document.querySelector('[data-popup="image"]');
+
+        if (
+          !(linkButton && linkButton.contains(e.target as Node)) &&
+          !(imageButton && imageButton.contains(e.target as Node))
+        ) {
+          setActivePopup(null);
+          setInputValue('');
+        }
+      }
+    };
+
+    document.addEventListener('click', handleDocumentClick);
+
     return () => {
       document.removeEventListener('selectionchange', handleSelectionChange);
+      document.removeEventListener('click', handleDocumentClick);
     };
-  }, [editorRef]);
+  }, [editorRef, activePopup]);
 
   // 현재 선택 영역을 저장
   const saveSelection = () => {
@@ -92,7 +100,107 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
     return false;
   };
 
-  // 폰트 사이즈 증가
+  // 팝업 토글 함수 - 하나의 함수로 통합
+  const togglePopup = (type: PopupType) => {
+    saveSelection();
+
+    if (activePopup === type) {
+      // 같은 버튼을 다시 누르면 팝업 닫기
+      setActivePopup(null);
+      setInputValue('');
+    } else {
+      // 다른 팝업으로 변경
+      setActivePopup(type);
+      setInputValue('');
+
+      // 팝업이 열리면 자동으로 input에 포커스
+      setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+        }
+      }, 100);
+    }
+  };
+
+  /**
+   * 하이퍼링크 삽입
+   *  */
+  const insertLink = () => {
+    if (!inputValue) return;
+
+    if (restoreSelection()) {
+      const selection = window.getSelection();
+      if (!selection || selection.rangeCount === 0) return;
+
+      const range = selection.getRangeAt(0);
+      const selectedText = range.toString() || inputValue;
+
+      // URL 검증 및 수정
+      let url = inputValue;
+      if (!/^https?:\/\//i.test(url)) {
+        url = 'https://' + url;
+      }
+
+      const anchor = document.createElement('a');
+      anchor.href = url;
+      anchor.textContent = selectedText;
+      anchor.target = '_blank';
+      anchor.rel = 'noopener noreferrer';
+
+      range.deleteContents();
+      range.insertNode(anchor);
+
+      // 커서를 링크 뒤로 이동
+      range.setStartAfter(anchor);
+      range.setEndAfter(anchor);
+      selection.removeAllRanges();
+      selection.addRange(range);
+
+      // 상태 초기화
+      setInputValue('');
+      setActivePopup(null);
+    }
+  };
+
+  /**
+   * 이미지 삽입
+   *  */
+  const insertImage = () => {
+    if (!inputValue) return;
+
+    if (restoreSelection()) {
+      const selection = window.getSelection();
+      if (!selection || selection.rangeCount === 0) return;
+
+      const range = selection.getRangeAt(0);
+
+      let url = inputValue;
+      if (!/^https?:\/\//i.test(url)) {
+        url = 'https://' + url;
+      }
+
+      const img = document.createElement('img');
+      img.src = url;
+      img.alt = 'image';
+      img.style.maxWidth = '100%';
+
+      range.deleteContents();
+      range.insertNode(img);
+
+      // 커서 이동: 이미지 뒤로
+      range.setStartAfter(img);
+      range.setEndAfter(img);
+      selection.removeAllRanges();
+      selection.addRange(range);
+
+      setInputValue('');
+      setActivePopup(null);
+    }
+  };
+
+  /**
+   *  폰트 사이즈 증가
+   *  */
   const increaseFontSize = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -114,7 +222,6 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
     });
   };
 
-  // 폰트 사이즈 감소
   const decreaseFontSize = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -135,7 +242,11 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
     });
   };
 
-  // 직접 폰트 사이즈 적용
+  /**
+   * 폰트 사이즈 수정
+   * @param e
+   * @returns
+   */
   const applyFontSize = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -162,42 +273,22 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
     }
   };
 
-  const handleToggleLinkInput = () => {
-    saveSelection();
-    setShowLinkInput((prev) => !prev);
-    setShowImageInput(false);
-    setInputValue('');
-  };
-
   /**
-   * 하이퍼링크 기능
+   * 키보드로 팝업 입력값 제출 처리
+   * @param e
    */
-  const insertLink = () => {
-    if (!inputValue) return;
-
-    if (restoreSelection()) {
-      const selection = window.getSelection();
-      if (!selection || selection.rangeCount === 0) return;
-
-      const range = selection.getRangeAt(0);
-      const selectedText = range.toString() || inputValue;
-
-      const anchor = document.createElement('a');
-      anchor.href = inputValue;
-      anchor.textContent = selectedText;
-      anchor.target = '_blank';
-      anchor.rel = 'noopener noreferrer';
-
-      range.deleteContents();
-      range.insertNode(anchor);
-
-      range.setStartAfter(anchor);
-      range.setEndAfter(anchor);
-      selection.removeAllRanges();
-      selection.addRange(range);
-
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      if (activePopup === 'link') {
+        insertLink();
+      } else if (activePopup === 'image') {
+        insertImage();
+      }
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      setActivePopup(null);
       setInputValue('');
-      setShowLinkInput(false);
     }
   };
 
@@ -227,10 +318,8 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
 
     const element = document.createElement(tag);
     if (selectedText) {
-      // ✅ 텍스트를 선택한 경우waaaaaaaaaaaaww
       element.textContent = selectedText;
     } else {
-      // ✅ 텍스트 선택이 없고, 커서만 깜빡이는 경우
       element.innerHTML = '&#8203;'; // (Zero-width space) 넣어줘야 깨지지 않음
     }
 
@@ -277,34 +366,6 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
     }
   };
 
-  const insertImage = () => {
-    if (!inputValue) return;
-
-    if (restoreSelection()) {
-      const selection = window.getSelection();
-      if (!selection || selection.rangeCount === 0) return;
-
-      const range = selection.getRangeAt(0);
-
-      const img = document.createElement('img');
-      img.src = inputValue;
-      img.alt = 'image';
-      img.style.maxWidth = '100%';
-
-      range.deleteContents();
-      range.insertNode(img);
-
-      // 커서 이동: 이미지 뒤로
-      range.setStartAfter(img);
-      range.setEndAfter(img);
-      selection.removeAllRanges();
-      selection.addRange(range);
-
-      setInputValue('');
-      setShowImageInput(false);
-    }
-  };
-
   const applyBold = () => {
     saveSelection();
     wrapSelectionWithElement('strong');
@@ -318,6 +379,34 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
   const applyColor = (color: string) => {
     saveSelection();
     wrapSelectionWithElement('span', { color });
+  };
+
+  // 공통 팝업 UI 컴포넌트
+  const renderPopup = () => {
+    if (!activePopup) return null;
+
+    const isLink = activePopup === 'link';
+    // const isImage = activePopup === 'image';
+
+    return (
+      <div className="absolute top-full mt-1 left-0 flex gap-1 z-10">
+        <input
+          ref={inputRef}
+          onClick={(e) => e.stopPropagation()}
+          className="border rounded px-2 py-1 text-sm w-48 bg-white shadow"
+          placeholder={isLink ? '링크를 입력해주세요' : '이미지 URL 입력'}
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onKeyDown={handleInputKeyDown}
+        />
+        <button
+          onClick={isLink ? insertLink : insertImage}
+          className={`w-14 ${isLink ? 'bg-blue-500 hover:bg-blue-600' : 'bg-green-500 hover:bg-green-600'} text-white px-2 rounded text-sm`}
+        >
+          적용
+        </button>
+      </div>
+    );
   };
 
   return (
@@ -344,12 +433,6 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
           onFocus={saveSelection}
           value={fontSizeValue}
           onChange={handleFontSizeInputChange}
-          // onKeyDown={(e) => {
-          //   if (e.key === 'Enter') {
-          //     e.preventDefault();
-          //     applyFontSize(e);
-          //   }
-          // }}
           className="w-10 text-center border rounded"
         />
       </form>
@@ -385,56 +468,22 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
 
       {/* 하이퍼링크 */}
       <button
-        onClick={handleToggleLinkInput}
-        className="relative p-2 border rounded hover:bg-gray-100"
+        data-popup="link"
+        onClick={() => togglePopup('link')}
+        className={`relative p-2 border rounded ${activePopup === 'link' ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
       >
         <Link className="w-4 h-4" />
-        {showLinkInput && (
-          <div className="absolute top-full mt-1 left-0 flex gap-1">
-            <input
-              ref={linkInputRef}
-              onClick={(e) => e.stopPropagation()}
-              className="border rounded px-2 py-1 text-sm w-48 bg-white shadow"
-              placeholder="링크를 입력해주세요."
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-            />
-            <button
-              onClick={insertLink}
-              className=" w-14 bg-blue-500 text-white px-2 rounded text-sm hover:bg-blue-600"
-            >
-              적용
-            </button>
-          </div>
-        )}
+        {activePopup === 'link' && renderPopup()}
       </button>
+
+      {/* 이미지 */}
       <button
-        onClick={() => {
-          saveSelection();
-          setShowImageInput((prev) => !prev);
-          setShowLinkInput(false);
-          setInputValue('');
-        }}
-        className="relative p-2 border rounded hover:bg-gray-100"
+        data-popup="image"
+        onClick={() => togglePopup('image')}
+        className={`relative p-2 border rounded ${activePopup === 'image' ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
       >
         <ImageIcon className="w-4 h-4" />
-        {showImageInput && (
-          <div className="absolute top-full mt-1 left-0 flex gap-1">
-            <input
-              onClick={(e) => e.stopPropagation()}
-              className="border rounded px-2 py-1 text-sm w-48 bg-white shadow"
-              placeholder="이미지 URL 입력"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-            />
-            <button
-              onClick={insertImage}
-              className="w-14 bg-green-500 text-white px-2 rounded text-sm hover:bg-green-600"
-            >
-              적용
-            </button>
-          </div>
-        )}
+        {activePopup === 'image' && renderPopup()}
       </button>
 
       <div className="w-px h-full bg-gray-300"></div>
