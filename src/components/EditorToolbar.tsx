@@ -155,12 +155,12 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
     }
   };
 
-  // const handleFontSizeInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const value = parseInt(e.target.value);
-  //   if (!isNaN(value) && value > 0) {
-  //     setFontSizeValue(value);
-  //   }
-  // };
+  const handleFontSizeInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = parseInt(e.target.value);
+    if (!isNaN(value) && value > 0) {
+      setFontSizeValue(value);
+    }
+  };
 
   const handleToggleLinkInput = () => {
     saveSelection();
@@ -337,11 +337,20 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
       </button>
       <form onSubmit={(e) => applyFontSize(e)}>
         <input
-          onClick={(e) => e.stopPropagation()}
-          className="border rounded px-2 py-1 text-sm w-48 bg-white shadow"
-          placeholder="이미지 URL 입력"
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
+          onMouseDown={(e) => {
+            saveSelection();
+            e.stopPropagation();
+          }}
+          onFocus={saveSelection}
+          value={fontSizeValue}
+          onChange={handleFontSizeInputChange}
+          // onKeyDown={(e) => {
+          //   if (e.key === 'Enter') {
+          //     e.preventDefault();
+          //     applyFontSize(e);
+          //   }
+          // }}
+          className="w-10 text-center border rounded"
         />
       </form>
       <button onMouseDown={increaseFontSize} className="px-2 py-1 border rounded hover:bg-gray-100">
