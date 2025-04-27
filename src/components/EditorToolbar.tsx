@@ -6,6 +6,7 @@ import {
   SelectContent,
   SelectItem,
 } from '@/components/ui/select';
+import EditorUploadButton from './editor/EditorUploadButton';
 import EditorButton from './editor/EditorButton';
 import EditorSelect from './editor/EditorSelect';
 import { useSelection } from '@/hooks/useSelection';
@@ -98,6 +99,8 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
   // 팝업 토글 함수 - 하나의 함수로 통합
   const togglePopup = (type: PopupType) => {
     saveSelection();
+    console.log('type', type);
+    console.log('activePopup', activePopup);
 
     if (activePopup === type) {
       // 같은 버튼을 다시 누르면 팝업 닫기
@@ -562,6 +565,7 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
       <div className="w-px h-full bg-gray-300 "></div>
 
       {/* Font Size */}
+      {/* <EditorFontSize editorRef={editorRef} /> */}
       <Button onMouseDown={decreaseFontSize} className="px-2 py-1 border rounded hover:bg-gray-100">
         -
       </Button>
@@ -598,13 +602,8 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
       </Select>
       <div className="w-px h-full bg-gray-300"></div>
 
-      <div className="w-px h-full bg-gray-300"></div>
-
       {/* Bold / Italic */}
       <EditorButton onClick={applyBold}>B</EditorButton>
-      {/* <Button onClick={applyBold} className="px-2 py-1 font-bold border rounded hover:bg-gray-100">
-        B
-      </Button> */}
       <EditorButton onClick={applyItalic}>
         <Italic className="w-4 h-4" />
       </EditorButton>
@@ -617,24 +616,24 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
       <div className="w-px h-full bg-gray-300"></div>
 
       {/* 하이퍼링크 */}
-      <Button
-        data-popup="link"
-        onClick={() => togglePopup('link')}
-        className={`relative p-2 border rounded ${activePopup === 'link' ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
+      <EditorUploadButton
+        type="link"
+        togglePopup={() => togglePopup('link')}
+        renderPopUp={renderLinkPopup}
+        activePopup={activePopup}
       >
         <Link className="w-4 h-4" />
-        {activePopup === 'link' && renderLinkPopup()}
-      </Button>
+      </EditorUploadButton>
 
       {/* 이미지 */}
-      <Button
-        data-popup="image"
-        onClick={() => togglePopup('image')}
-        className={`relative p-2 border rounded ${activePopup === 'image' ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
+      <EditorUploadButton
+        type="image"
+        togglePopup={() => togglePopup('image')}
+        renderPopUp={renderImagePopup}
+        activePopup={activePopup}
       >
         <ImageIcon className="w-4 h-4" />
-        {activePopup === 'image' && renderImagePopup()}
-      </Button>
+      </EditorUploadButton>
 
       <div className="w-px h-full bg-gray-300"></div>
     </div>
