@@ -4,7 +4,7 @@ type LayoutProps = {
 };
 
 const DUMMY_DATA = {
-  title: '이력서',
+  title: '장기자랑',
 };
 
 export default function Layout({ children }: LayoutProps) {

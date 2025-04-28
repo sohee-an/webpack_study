@@ -7,11 +7,11 @@ function App() {
   console.log('process', process.env.NODE_ENV);
 
   return (
-    <div>
+    <>
       <Layout>
         <Editor />
       </Layout>
-    </div>
+    </>
   );
 }
 
