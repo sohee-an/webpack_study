@@ -28,15 +28,12 @@ export default [
       prettier,
     },
     rules: {
-      ...js.configs.recommended.rules,
-      ...tseslint.configs.recommended.rules,
-      'prettier/prettier': 'warn', // Prettier와 충돌 시 경고
+      ...js.configs.recommended.rules, // 기본 JS 룰
+      ...tseslint.configs.recommended.rules, // 타입스크립트용 룰
+      'prettier/prettier': 'error',
       semi: ['error', 'always'],
-    },
-  },
-  {
-    rules: {
-      ...prettierConfig.rules, // prettier와 충돌 방지
+      ...prettierConfig.rules,
+      'no-undef': 'off',
     },
   },
 ];

@@ -1,13 +1,16 @@
 import React from 'react';
-import 'app.css';
+import Editor from './components/Editor';
+import './global.css';
+import Layout from './components/Layout/Layout';
 
 function App() {
   console.log('process', process.env.NODE_ENV);
 
   return (
-    <div className="container">
-      <input />
-      <button>확인 e</button>
+    <div>
+      <Layout>
+        <Editor />
+      </Layout>
     </div>
   );
 }
