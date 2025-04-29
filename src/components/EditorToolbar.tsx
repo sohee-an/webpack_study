@@ -213,10 +213,25 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
       const range = selection.getRangeAt(0);
       const selectedText = range.toString() || inputValue;
 
+      //선택 영역 내에 링크가 있는지보자
+      const parentNode = range.commonAncestorContainer;
+      let currentElement;
+
+      // 텍스트 노드인 경우 부모 요소 가져오기
+      if (parentNode.nodeType === Node.TEXT_NODE) {
+        currentElement = parentNode.parentElement;
+      } else {
+        currentElement = parentNode;
+      }
+
+      // 현재 요소가 어떤 태그인지 확인
+      console.log('현재 선택된 요소:', currentElement);
+
       // URL 검증 및 수정
       let url = inputValue;
       if (!/^https?:\/\//i.test(url)) {
-        url = 'https://' + url;
+        return alert('URL이 유효하지 않습니다.'); // URL이 유효하지 않으면 경고창 표시
+        // url = 'https://' + url;
       }
 
       const anchor = document.createElement('a');
@@ -465,7 +480,7 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
         <input
           ref={inputRef}
           onClick={(e) => e.stopPropagation()}
-          className="border rounded px-2 py-1 text-sm w-48 bg-white shadow"
+          className="border rounded px-2 py-1 text-sm w-48  bg-white shadow"
           placeholder="링크를 입력해주세요"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
@@ -585,29 +600,10 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
         fontSizeValue={fontSizeValue}
         setFontSizeValue={setFontSizeValue}
       />
-      {/* <Button onMouseDown={decreaseFontSize} className="px-2 py-1 border rounded hover:bg-gray-100">
-        -
-      </Button>
-      <form onSubmit={(e) => applyFontSize(e)}>
-        <input
-          onMouseDown={(e) => {
-            saveSelection();
-            e.stopPropagation();
-          }}
-          onFocus={saveSelection}
-          value={fontSizeValue}
-          onChange={handleFontSizeInputChange}
-          className="w-10 text-center border rounded"
-        />
-      </form>
-      <Button onMouseDown={increaseFontSize} className="px-2 py-1 border rounded hover:bg-gray-100">
-        +
-      </Button> */}
 
       <div className="w-px h-full bg-gray-300"></div>
 
       {/* Color */}
-
       <Select onValueChange={(value) => applyColor(value)}>
         <SelectTrigger className="w-[100px] h-full ">
           <SelectValue placeholder="color" />

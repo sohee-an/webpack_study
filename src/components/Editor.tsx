@@ -7,7 +7,7 @@ export default function Editor() {
   return (
     <div>
       <div style={{ marginBottom: '1rem' }}>
-        {/* ✅ 툴바 컴포넌트 */}
+        {/*  툴바 컴포넌트 */}
         <Toolbar editorRef={editorRef} />
       </div>
 

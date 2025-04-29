@@ -32,6 +32,7 @@
     a {
       color: rgb(28, 28, 198);
       cursor: pointer;
+      font-style: italic;
     }
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;

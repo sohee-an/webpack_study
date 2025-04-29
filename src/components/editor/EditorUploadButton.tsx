@@ -17,7 +17,6 @@ export default function EditorUploadButton({
   activePopup,
   renderPopUp,
 }: TProps) {
-  console.log('type', type);
   return (
     <div className="">
       <Button
