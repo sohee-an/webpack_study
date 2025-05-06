@@ -88,7 +88,7 @@ export default function EditorFontSize({
   };
 
   return (
-    <>
+    <div className="h-[32px] flex gap-2">
       <EditorButton onMouseDown={decreaseFontSize}>-</EditorButton>
       <form onSubmit={applyFontSize}>
         <input
@@ -103,6 +103,6 @@ export default function EditorFontSize({
         />
       </form>
       <EditorButton onMouseDown={increaseFontSize}>+</EditorButton>
-    </>
+    </div>
   );
 }

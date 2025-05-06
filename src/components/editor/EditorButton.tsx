@@ -16,7 +16,7 @@ export default function EditorButton({ onClick, children, onMouseDown, className
       onClick={onClick}
       onMouseDown={onMouseDown}
       className={clsx(
-        'h-full flex items-center justify-center px-2 py-1 min-w-[32px] min-h-[32px] font-bold border rounded hover:bg-gray-100',
+        'h-full flex items-center justify-center px-2 py-1 font-bold border rounded hover:bg-gray-100',
         className,
       )}
     >
