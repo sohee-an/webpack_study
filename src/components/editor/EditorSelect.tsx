@@ -16,7 +16,7 @@ export default function EditorSelect({ onChange }: EditorToolbarProps) {
   return (
     <div>
       <Select onValueChange={(value) => onChange(value as keyof HTMLElementTagNameMap)}>
-        <SelectTrigger className="w-[100px] h-full">
+        <SelectTrigger className="w-[100px] h-full bg-white">
           <SelectValue placeholder="본문" />
         </SelectTrigger>
         <SelectContent>

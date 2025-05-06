@@ -6,7 +6,7 @@ export default function Editor() {
 
   return (
     <div>
-      <div style={{ marginBottom: '1rem' }}>
+      <div style={{ marginBottom: '1rem' }} className="w-full">
         {/*  툴바 컴포넌트 */}
         <Toolbar editorRef={editorRef} />
       </div>

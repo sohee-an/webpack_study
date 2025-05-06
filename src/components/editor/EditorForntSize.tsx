@@ -1,6 +1,6 @@
 import React from 'react';
 import { useEditorUtils } from '@/hooks/useEditorUtils';
-import EditorButton from './EditorButton';
+import { EditorButton } from './EditorButton';
 
 type EditorFontSizeProps = {
   editorRef: React.RefObject<HTMLDivElement | null>;
@@ -88,7 +88,7 @@ export default function EditorFontSize({
   };
 
   return (
-    <div className="h-[32px] flex gap-2">
+    <div className="flex gap-2">
       <EditorButton onMouseDown={decreaseFontSize}>-</EditorButton>
       <form onSubmit={applyFontSize}>
         <input

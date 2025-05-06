@@ -1,6 +1,7 @@
 import React from 'react';
 import { useSelection } from '@/hooks/useSelection';
 import { Button } from '@radix-ui/themes';
+import { EditorButton } from './EditorButton';
 
 import { AlignLeft, AlignCenter, AlignRight, AlignJustify } from 'lucide-react';
 
@@ -87,13 +88,13 @@ export default function EditorTextAlignment({ editorRef }: TProps) {
   };
   return (
     <div className="flex items-center  gap-1 h-10">
-      <Button
+      <EditorButton
         onClick={() => applyAlignment('left')}
         title="왼쪽 정렬"
         className="p-1 h-8 w-8  flex items-center  justify-center   border rounded hover:bg-gray-100"
       >
         <AlignLeft className="w-4 h-4" />
-      </Button>
+      </EditorButton>
       <Button
         onClick={() => applyAlignment('center')}
         title="가운데 정렬"

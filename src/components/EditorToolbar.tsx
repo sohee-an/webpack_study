@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/select';
 import EditorFontSize from './editor/EditorForntSize';
 import EditorUploadButton from './editor/EditorUploadButton';
-import EditorButton from './editor/EditorButton';
+import { EditorButton } from './editor/EditorButton';
 import EditorSelect from './editor/EditorSelect';
 import { useSelection } from '@/hooks/useSelection';
 import EditorList from './editor/EditorList';
@@ -583,7 +583,7 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
   };
 
   return (
-    <div className="flex items-center gap-2 mb-4 h-10   py-1">
+    <div className="flex items-center gap-2 mb-4 h-[45px] bg-blue-100 p-1 border rounded w-full overflow-x-auto whitespace-nowrap touch-auto  overflow-y-hidden scrollbar-hidden">
       {/* Heading Select */}
       <EditorSelect
         onChange={(value) => {
@@ -605,7 +605,7 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
 
       {/* Color */}
       <Select onValueChange={(value) => applyColor(value)}>
-        <SelectTrigger className="w-[100px] h-full ">
+        <SelectTrigger className="w-[100px] h-full bg-white ">
           <SelectValue placeholder="color" />
         </SelectTrigger>
         <SelectContent>
