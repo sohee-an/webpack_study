@@ -15,6 +15,7 @@ import EditorList from './editor/EditorList';
 import { Italic, Link, Image as ImageIcon, Upload, X, AlertCircle } from 'lucide-react';
 import { COLOR_LIST } from '@/constants/editor';
 import EditorTextAlignment from './editor/EditorTextAlignment';
+import { Divider } from './ui/Divider';
 
 type ToolbarProps = {
   editorRef: React.RefObject<HTMLDivElement | null>;
@@ -583,7 +584,7 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
   };
 
   return (
-    <div className="flex items-center gap-2 mb-4 h-[45px] bg-blue-100 p-1 border rounded w-full overflow-x-auto whitespace-nowrap touch-auto  overflow-y-hidden scrollbar-hidden">
+    <div className="flex items-center gap-2 mb-4 h-[45px] bg-gray-200 p-1 border rounded w-full overflow-x-auto whitespace-nowrap touch-auto  overflow-y-hidden scrollbar-hidden">
       {/* Heading Select */}
       <EditorSelect
         onChange={(value) => {
@@ -592,7 +593,7 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
         }}
       />
 
-      <div className="w-px h-full bg-gray-300 py-1"></div>
+      <Divider />
 
       {/* Font Size */}
       <EditorFontSize
@@ -601,7 +602,7 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
         setFontSizeValue={setFontSizeValue}
       />
 
-      <div className="w-px h-full bg-gray-300"></div>
+      <Divider />
 
       {/* Color */}
       <Select onValueChange={(value) => applyColor(value)}>
@@ -617,7 +618,7 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
         </SelectContent>
       </Select>
 
-      <div className="w-px h-full bg-gray-300"></div>
+      <Divider />
 
       {/* Bold / Italic */}
       <EditorButton onClick={applyBold}>B</EditorButton>
@@ -625,16 +626,16 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
         <Italic className="w-4 h-4" />
       </EditorButton>
 
-      <div className="w-px h-full bg-gray-300"></div>
+      <Divider />
 
       {/* Text Alignment */}
       <EditorTextAlignment editorRef={editorRef} />
 
-      <div className="w-px h-full bg-gray-300"></div>
+      <Divider />
 
       <EditorList editorRef={editorRef} />
 
-      <div className="w-px h-full bg-gray-300"></div>
+      <Divider />
 
       {/* 하이퍼링크 */}
       <EditorUploadButton
@@ -656,7 +657,7 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
         <ImageIcon className="w-4 h-4" />
       </EditorUploadButton>
 
-      <div className="w-px h-full bg-gray-300"></div>
+      <Divider />
     </div>
   );
 }

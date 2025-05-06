@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button } from '../ui/button';
+import { EditorButton } from './EditorButton';
 
 type PopupType = 'link' | 'image' | null;
 type TProps = {
@@ -18,15 +18,15 @@ export default function EditorUploadButton({
   renderPopUp,
 }: TProps) {
   return (
-    <div className="">
-      <Button
+    <>
+      <EditorButton
         data-popup={type}
         onClick={() => togglePopup(type)}
         className={`relative h-full  w-8 p-2 border rounded ${activePopup === type ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
       >
         {children}
         {activePopup === type && renderPopUp()}
-      </Button>
-    </div>
+      </EditorButton>
+    </>
   );
 }
