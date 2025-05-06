@@ -1,6 +1,6 @@
 import React from 'react';
-import { Button } from '@radix-ui/themes';
 import { useEditorUtils } from '@/hooks/useEditorUtils';
+import EditorButton from './EditorButton';
 
 type EditorFontSizeProps = {
   editorRef: React.RefObject<HTMLDivElement | null>;
@@ -17,7 +17,9 @@ export default function EditorFontSize({
     editorRef,
   });
 
-  // 폰트 사이즈 증가
+  /**
+   * 폰트 사이즈 증가
+   *  */
   const increaseFontSize = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -87,12 +89,7 @@ export default function EditorFontSize({
 
   return (
     <>
-      <Button
-        onMouseDown={decreaseFontSize}
-        className="h-full flex items-center justify-center px-2 py-1 border rounded hover:bg-gray-100"
-      >
-        -
-      </Button>
+      <EditorButton onMouseDown={decreaseFontSize}>-</EditorButton>
       <form onSubmit={applyFontSize}>
         <input
           onMouseDown={(e) => {
@@ -105,12 +102,7 @@ export default function EditorFontSize({
           className="w-10 h-full text-center border rounded"
         />
       </form>
-      <Button
-        onMouseDown={increaseFontSize}
-        className="h-full flex items-center justify-center px-2 py-1 border rounded hover:bg-gray-100"
-      >
-        +
-      </Button>
+      <EditorButton onMouseDown={increaseFontSize}>+</EditorButton>
     </>
   );
 }
