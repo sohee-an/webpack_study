@@ -14,7 +14,7 @@ const EditorButton = React.forwardRef<React.ElementRef<'button'>, ButtonProps>(
         ref={ref}
         onClick={onClick}
         className={clsx(
-          'h-full flex items-center justify-center px-2 py-1 bg-white min-w-[34px] min-h-[32px] font-bold border rounded hover:bg-gray-100',
+          'flex items-center justify-center px-2 py-1 bg-white min-w-[34px] min-h-[34px] font-bold border rounded hover:bg-gray-100',
           className,
         )}
         {...rest}
