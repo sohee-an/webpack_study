@@ -4,6 +4,12 @@ type UseSelectionProps = {
   editorRef: RefObject<HTMLDivElement | null>;
 };
 
+/**
+ *  에디터에서 선택된 텍스트의 범위를 저장하고 복원하는 훅
+ * @param param0 에디터 DOM 요소에 대한 참조
+ * @param param0.editorRef 에디터 DOM 요소에 대한 참조
+ * @returns
+ */
 export function useSelection({ editorRef }: UseSelectionProps) {
   const [savedRange, setSavedRange] = useState<Range | null>(null);
 
