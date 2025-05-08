@@ -137,14 +137,13 @@ export default function EditorUploadButton({
       });
     }
   }, [activePopup, removeSelectionStyle, restoreSelection]);
+
   return (
-    <div ref={buttonRef} className="relative">
+    <div ref={buttonRef} className="relative h-full">
       <EditorButton
         data-popup={type}
         onClick={handleButtonClick}
-        className={`h-full w-8 p-2 border rounded ${
-          activePopup === type ? 'bg-gray-200' : 'hover:bg-gray-100'
-        }`}
+        className={`${activePopup === type ? 'bg-gray-200' : 'hover:bg-gray-100'}`}
       >
         {children}
       </EditorButton>
