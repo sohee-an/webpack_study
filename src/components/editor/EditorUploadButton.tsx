@@ -3,6 +3,7 @@ import { EditorButton } from './EditorButton';
 import ReactDOM from 'react-dom';
 import { useEditorUtils } from '@/hooks/useEditorUtils';
 import { getCaretCoordinates } from '@/utiles/editor';
+import { useSelectionHighlight } from '@/hooks/useSelectionHighlight';
 
 type PopupType = 'link' | 'image' | null;
 
@@ -25,17 +26,12 @@ export default function EditorUploadButton({
 }: TProps) {
   const buttonRef = useRef<HTMLDivElement>(null);
   const popupRef = useRef<HTMLDivElement>(null);
-  const highlightSpanRef = useRef<HTMLSpanElement | null>(null);
+  /**질문 : editorRef를 전역변수를 가지고있는것이 나을려나요? */
   const [popupPosition, setPopupPosition] = useState({ top: 0, left: 0 });
   const { saveSelection, restoreSelection } = useEditorUtils({ editorRef });
+  const { applySelectionStyle, removeSelectionStyle, highlightSpanRef } =
+    useSelectionHighlight(editorRef);
 
-  // const handleButtonClick = (e: React.MouseEvent) => {
-  //   e.preventDefault();
-  //   e.stopPropagation(); // 이벤트 전파 중지 - 중요!
-
-  //   saveSelection(); // 선택 영역 저장
-  //   togglePopup(type); // 팝업 토글
-  // };
   /**
    * 커서 또는 선택 영역의 위치를 기준으로 팝업 위치 계산
    *  */
@@ -106,53 +102,6 @@ export default function EditorUploadButton({
     }
   }, [activePopup, type, popupPosition]);
 
-  /**
-   * 선택 영역에 스타일 적용
-   */
-  const applySelectionStyle = () => {
-    removeSelectionStyle();
-
-    // 저장된 선택 영역 복원
-    if (restoreSelection()) {
-      const selection = window.getSelection();
-      if (selection && selection.rangeCount > 0) {
-        const range = selection.getRangeAt(0);
-        if (range.toString().trim() === '') return null;
-
-        const span = document.createElement('span');
-        span.className = 'text-selection-highlight';
-        span.style.backgroundColor = '#d0d0d3';
-
-        try {
-          range.surroundContents(span);
-          highlightSpanRef.current = span;
-
-          /**질문 : 이 부분은 어차피 인풋에 포커스가 가기때문에 사라질텐데
-           * 굳이 여기서 없애는코드를넣을 필요가 있는건가?
-           * 안정성 때문인가? 과연 이게 안정성이 되는건가?
-           * 그치만 넣는다면 맥락적으로는 넣는게 더 자연스럽기는 함*/
-          // selection.removeAllRanges();
-          return span;
-        } catch (e) {
-          console.error('선택 영역을 감싸는 중 오류 발생:', e);
-        }
-      }
-    }
-    return null;
-  };
-
-  /**
-   * 선택 영역 스타일 제거
-   *  */
-  const removeSelectionStyle = () => {
-    if (highlightSpanRef.current && highlightSpanRef.current.parentNode) {
-      const textContent = highlightSpanRef.current.textContent || '';
-      const textNode = document.createTextNode(textContent);
-      highlightSpanRef.current.parentNode.replaceChild(textNode, highlightSpanRef.current);
-      highlightSpanRef.current = null;
-    }
-  };
-
   const handleButtonClick = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -160,22 +109,34 @@ export default function EditorUploadButton({
     saveSelection();
     applySelectionStyle();
 
-    // 팝업 토글
     togglePopup(type);
   };
 
   // 팝업이 닫힐 때 하이라이트 제거
+  // useEffect(() => {
+  //   if (!activePopup && highlightSpanRef.current) {
+  //     // 선택 영역 복원 전에 하이라이트 제거
+  //     const timer = setTimeout(() => {
+  //       removeSelectionStyle();
+  //       restoreSelection(); // 원래 선택 영역 복원
+  //     }, 10);
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, [activePopup, restoreSelection]);
+
   useEffect(() => {
     if (!activePopup && highlightSpanRef.current) {
-      // 선택 영역 복원 전에 하이라이트 제거
-      const timer = setTimeout(() => {
+      requestAnimationFrame(() => {
+        // 첫 번째 프레임: 하이라이트 제거
         removeSelectionStyle();
-        restoreSelection(); // 원래 선택 영역 복원
-      }, 10);
-      return () => clearTimeout(timer);
-    }
-  }, [activePopup, restoreSelection]);
 
+        // 두 번째 프레임: 선택 영역 복원
+        requestAnimationFrame(() => {
+          restoreSelection();
+        });
+      });
+    }
+  }, [activePopup, removeSelectionStyle, restoreSelection]);
   return (
     <div ref={buttonRef} className="relative">
       <EditorButton
