@@ -1,7 +1,7 @@
 import React from 'react';
-import { Button } from '@/components/ui/button';
 import { useEditorUtils } from '@/hooks/useEditorUtils';
 import { List, ListOrdered } from 'lucide-react';
+import { EditorButton } from './EditorButton';
 
 type EditorListProps = {
   editorRef: React.RefObject<HTMLDivElement | null>;
@@ -149,20 +149,20 @@ export default function EditorList({ editorRef }: EditorListProps) {
 
   return (
     <div className="flex h-full  items-center gap-1">
-      <Button
+      <EditorButton
         onClick={applyUnorderedList}
         title="순서 없는 목록"
         className="p-1 w-8 h-full border rounded hover:bg-gray-100"
       >
         <List className="w-4 h-4" />
-      </Button>
-      <Button
+      </EditorButton>
+      <EditorButton
         onClick={applyOrderedList}
         title="순서 있는 목록"
         className="p-1 w-8 h-full  border rounded hover:bg-gray-100"
       >
         <ListOrdered className="w-4 h-4" />
-      </Button>
+      </EditorButton>
     </div>
   );
 }

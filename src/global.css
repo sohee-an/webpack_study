@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* 🧩 추가로 이걸 꼭 직접 추가해줘야 한다 */
 @layer base {
   :root {
     /* ✅ 추가: 기본 헤딩 스타일 */
@@ -94,4 +93,13 @@
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
   }
+}
+
+/** 스크롤 관련*/
+.scrollbar-hidden {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+}
+.scrollbar-hidden::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }
