@@ -1,17 +1,34 @@
 import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Editor from './components/Editor';
-import './global.css';
 import Layout from './components/Layout/Layout';
+import Register from './pages/auth/register';
+import Login from './pages/auth/Login';
 
 function App() {
-  console.log('process', process.env.NODE_ENV);
-
   return (
-    <>
-      <Layout>
-        <Editor />
-      </Layout>
-    </>
+    <Router>
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <div className="min-h-screen ">
+              <Editor />
+            </div>
+          }
+        />
+        <Route
+          path="/editor"
+          element={
+            <Layout>
+              <Editor />
+            </Layout>
+          }
+        />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+      </Routes>
+    </Router>
   );
 }
 
