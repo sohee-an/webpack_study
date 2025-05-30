@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSelection } from '@/hooks/useSelection';
-import { Button } from '@radix-ui/themes';
+import { EditorButton } from './EditorButton';
 
 import { AlignLeft, AlignCenter, AlignRight, AlignJustify } from 'lucide-react';
 
@@ -86,35 +86,19 @@ export default function EditorTextAlignment({ editorRef }: TProps) {
     }
   };
   return (
-    <div className="flex items-center  gap-1 h-10">
-      <Button
-        onClick={() => applyAlignment('left')}
-        title="왼쪽 정렬"
-        className="p-1 h-8 w-8  flex items-center  justify-center   border rounded hover:bg-gray-100"
-      >
+    <div className="flex items-center  gap-1 h-full">
+      <EditorButton onClick={() => applyAlignment('left')} title="왼쪽 정렬">
         <AlignLeft className="w-4 h-4" />
-      </Button>
-      <Button
-        onClick={() => applyAlignment('center')}
-        title="가운데 정렬"
-        className="p-1 h-8 w-8 flex items-center  justify-center  border rounded hover:bg-gray-100"
-      >
+      </EditorButton>
+      <EditorButton onClick={() => applyAlignment('center')} title="가운데 정렬">
         <AlignCenter className="w-4 h-4" />
-      </Button>
-      <Button
-        onClick={() => applyAlignment('right')}
-        title="오른쪽 정렬"
-        className="p-1 h-8 w-8 flex items-center  justify-center  border rounded hover:bg-gray-100"
-      >
+      </EditorButton>
+      <EditorButton onClick={() => applyAlignment('right')} title="오른쪽 정렬">
         <AlignRight className="w-4 h-4" />
-      </Button>
-      <Button
-        onClick={() => applyAlignment('justify')}
-        title="양쪽 정렬"
-        className="p-1 h-8 w-8 flex items-center  justify-center  border rounded hover:bg-gray-100"
-      >
+      </EditorButton>
+      <EditorButton onClick={() => applyAlignment('justify')} title="양쪽 정렬">
         <AlignJustify className="w-4 h-4" />
-      </Button>
+      </EditorButton>
     </div>
   );
 }

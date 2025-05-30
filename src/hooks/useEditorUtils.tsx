@@ -5,6 +5,11 @@ type UseEditorUtilsProps = {
   editorRef: React.RefObject<HTMLDivElement | null>;
 };
 
+/**
+ * 에디터에서 선택된 텍스트를 HTML 요소로 감싸는 유틸리티 훅
+ * @param editorRef 에디터 DOM 요소에 대한 참조
+ * @returns {Object} 에디터 유틸리티 함수들
+ */
 export function useEditorUtils({ editorRef }: UseEditorUtilsProps) {
   // useSelection 훅 사용
   const { saveSelection, restoreSelection } = useSelection({ editorRef });

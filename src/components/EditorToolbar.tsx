@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
   Select,
   SelectTrigger,
@@ -8,13 +8,17 @@ import {
 } from '@/components/ui/select';
 import EditorFontSize from './editor/EditorForntSize';
 import EditorUploadButton from './editor/EditorUploadButton';
-import EditorButton from './editor/EditorButton';
+import { EditorButton } from './editor/EditorButton';
 import EditorSelect from './editor/EditorSelect';
 import { useSelection } from '@/hooks/useSelection';
 import EditorList from './editor/EditorList';
 import { Italic, Link, Image as ImageIcon, Upload, X, AlertCircle } from 'lucide-react';
 import { COLOR_LIST } from '@/constants/editor';
 import EditorTextAlignment from './editor/EditorTextAlignment';
+import { Divider } from './ui/Divider';
+import { CommandManager } from '@/utiles/Editor/EditorManager';
+import { BoldCommand } from '@/utiles/Editor/BoldCommand';
+import { Undo, Redo } from 'lucide-react';
 
 type ToolbarProps = {
   editorRef: React.RefObject<HTMLDivElement | null>;
@@ -27,6 +31,7 @@ type PopupType = 'link' | 'image' | null;
 type ImageUploadStatus = 'idle' | 'loading' | 'error' | 'success';
 
 export default function Toolbar({ editorRef }: ToolbarProps) {
+  const commandManager = useRef<CommandManager | null>(null);
   // const [savedRange, setSavedRange] = useState<Range | null>(null);
   // useSelection 훅 사용
   const { saveSelection, restoreSelection } = useSelection({ editorRef });
@@ -43,6 +48,13 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
 
   const inputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const savedRangeRef = useRef<Range | null>(null);
+
+  useEffect(() => {
+    if (!commandManager.current) {
+      commandManager.current = new CommandManager();
+    }
+  }, []);
 
   // 편집기에 포커스가 변경될 때 선택 영역 저장
   useEffect(() => {
@@ -458,10 +470,23 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
     }
   };
 
-  const applyBold = () => {
-    saveSelection();
-    wrapSelectionWithElement('strong');
-  };
+  const applyBold = useCallback(() => {
+    if (commandManager.current) {
+      console.log('applyBold called');
+      const bold = new BoldCommand(editorRef);
+      commandManager.current.execute(bold);
+    }
+  }, [editorRef]);
+
+  // const applyBold = () => {
+  //   if (commandManager.current) {
+  //     const bold = new BoldCommand(editorRef);
+  //     commandManager.current.execute(bold);
+  //   }
+
+  //   saveSelection();
+  //   wrapSelectionWithElement('strong');
+  // };
 
   const applyItalic = () => {
     saveSelection();
@@ -473,33 +498,71 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
     wrapSelectionWithElement('span', { color });
   };
 
+  const handleUndo = () => {
+    commandManager.current?.undo();
+  };
+
+  const handleRedo = () => {
+    commandManager.current?.redo();
+  };
+
   // 링크 팝업 UI
   const renderLinkPopup = () => {
+    // 현재 선택된 텍스트 가져오기
+    const selectedText = savedRangeRef.current?.toString() || '';
+
     return (
-      <div className="absolute top-full mt-1 left-0 flex gap-1 z-10">
-        <input
-          ref={inputRef}
-          onClick={(e) => e.stopPropagation()}
-          className="border rounded px-2 py-1 text-sm w-48  bg-white shadow"
-          placeholder="링크를 입력해주세요"
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          onKeyDown={handleInputKeyDown}
-        />
-        <button
-          onClick={insertLink}
-          className="w-14 bg-blue-500 hover:bg-blue-600 text-white px-2 rounded text-sm"
-        >
-          적용
-        </button>
+      <div className="absolute top-full mt-1 left-0 flex flex-col gap-1 z-10 bg-white p-2 rounded shadow">
+        {selectedText && (
+          <div className="text-sm bg-gray-100 p-1 rounded mb-1">
+            선택된 텍스트: <span className="font-medium">{selectedText}</span>
+          </div>
+        )}
+        <div className="flex gap-1">
+          <input
+            ref={inputRef}
+            className="border rounded px-2 py-1 text-sm w-48"
+            placeholder="링크를 입력해주세요"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={handleInputKeyDown}
+          />
+          <button
+            onClick={insertLink}
+            className="w-14 bg-blue-500 hover:bg-blue-600 text-white px-2 rounded text-sm"
+          >
+            적용
+          </button>
+        </div>
       </div>
     );
   };
+  // const renderLinkPopup = () => {
+  //   return (
+  //     <div className="absolute top-full mt-1 left-0 flex gap-1 z-10">
+  //       <input
+  //         ref={inputRef}
+  //         onClick={(e) => e.stopPropagation()}
+  //         className="border rounded px-2 py-1 text-sm w-48  bg-white shadow"
+  //         placeholder="링크를 입력해주세요"
+  //         value={inputValue}
+  //         onChange={(e) => setInputValue(e.target.value)}
+  //         onKeyDown={handleInputKeyDown}
+  //       />
+  //       <button
+  //         onClick={insertLink}
+  //         className="w-14 bg-blue-500 hover:bg-blue-600 text-white px-2 rounded text-sm"
+  //       >
+  //         적용
+  //       </button>
+  //     </div>
+  //   );
+  // };
 
   // 이미지 팝업 UI
   const renderImagePopup = () => {
     return (
-      <div className="absolute top-full mt-1 left-0 z-10 bg-white rounded shadow p-2 w-64">
+      <div className="absolute top-full  mt-1 left-0 z-10 bg-white rounded shadow p-2 w-64">
         {/* 숨겨진 파일 입력 */}
         <input
           type="file"
@@ -583,7 +646,15 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
   };
 
   return (
-    <div className="flex items-center gap-2 mb-4 h-10   py-1">
+    <div className="flex items-center gap-2 mb-4 h-[45px] bg-gray-200 p-1 border rounded w-full overflow-x-auto whitespace-nowrap touch-auto  overflow-y-hidden scrollbar-hidden">
+      <EditorButton onClick={handleUndo}>
+        <Undo className="w-4 h-4" />
+      </EditorButton>
+
+      <EditorButton onClick={handleRedo}>
+        <Redo className="w-4 h-4" />
+      </EditorButton>
+
       {/* Heading Select */}
       <EditorSelect
         onChange={(value) => {
@@ -592,7 +663,7 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
         }}
       />
 
-      <div className="w-px h-full bg-gray-300 py-1"></div>
+      <Divider />
 
       {/* Font Size */}
       <EditorFontSize
@@ -601,11 +672,11 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
         setFontSizeValue={setFontSizeValue}
       />
 
-      <div className="w-px h-full bg-gray-300"></div>
+      <Divider />
 
       {/* Color */}
       <Select onValueChange={(value) => applyColor(value)}>
-        <SelectTrigger className="w-[100px] h-full ">
+        <SelectTrigger className="w-[100px] h-full bg-white ">
           <SelectValue placeholder="color" />
         </SelectTrigger>
         <SelectContent>
@@ -617,7 +688,7 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
         </SelectContent>
       </Select>
 
-      <div className="w-px h-full bg-gray-300"></div>
+      <Divider />
 
       {/* Bold / Italic */}
       <EditorButton onClick={applyBold}>B</EditorButton>
@@ -625,16 +696,16 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
         <Italic className="w-4 h-4" />
       </EditorButton>
 
-      <div className="w-px h-full bg-gray-300"></div>
+      <Divider />
 
       {/* Text Alignment */}
       <EditorTextAlignment editorRef={editorRef} />
 
-      <div className="w-px h-full bg-gray-300"></div>
+      <Divider />
 
       <EditorList editorRef={editorRef} />
 
-      <div className="w-px h-full bg-gray-300"></div>
+      <Divider />
 
       {/* 하이퍼링크 */}
       <EditorUploadButton
@@ -642,6 +713,7 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
         togglePopup={() => togglePopup('link')}
         renderPopUp={renderLinkPopup}
         activePopup={activePopup}
+        editorRef={editorRef}
       >
         <Link className="w-4 h-4" />
       </EditorUploadButton>
@@ -652,11 +724,12 @@ export default function Toolbar({ editorRef }: ToolbarProps) {
         togglePopup={() => togglePopup('image')}
         renderPopUp={renderImagePopup}
         activePopup={activePopup}
+        editorRef={editorRef}
       >
         <ImageIcon className="w-4 h-4" />
       </EditorUploadButton>
 
-      <div className="w-px h-full bg-gray-300"></div>
+      <Divider />
     </div>
   );
 }
